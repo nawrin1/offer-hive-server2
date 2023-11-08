@@ -30,6 +30,7 @@ async function run() {
 
 
     const jobsCollection = client.db('Marketplace').collection('jobs');
+    const bidsCollection = client.db('Marketplace').collection('allBids');
     app.get('/jobs', async (req, res) => {
       const cursor = jobsCollection.find();
       const result = await cursor.toArray();
@@ -42,7 +43,14 @@ async function run() {
     const query = { _id: new ObjectId(id) }
     const result = await jobsCollection.findOne(query);
     res.send(result);
-})
+  })
+  app.post('/allBids', async (req, res) => {
+    const allBids = req.body;
+    console.log(allBids);
+   
+    const result = await bidsCollection.insertOne(allBids);
+    res.send(result);
+  });
 
 
 
