@@ -51,6 +51,18 @@ async function run() {
     const result = await bidsCollection.insertOne(allBids);
     res.send(result);
   });
+  app.get('/allBids', async (req, res) => {
+    console.log(req.query.email);
+   
+    
+    let query={}
+    if (req.query?.userEmail) {
+        query = { userEmail: req.query.userEmail }
+    }
+    
+    const result = await bidsCollection.find(query).toArray();
+    res.send(result);
+})
 
 
 
