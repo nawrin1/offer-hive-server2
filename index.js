@@ -44,6 +44,13 @@ async function run() {
     const result = await jobsCollection.findOne(query);
     res.send(result);
   })
+  app.get('/allBids/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log(id)
+    const query = { _id: new ObjectId(id) }
+    const result = await bidsCollection.findOne(query);
+    res.send(result);
+  })
   app.post('/allBids', async (req, res) => {
     const allBids = req.body;
     console.log(allBids);
@@ -66,6 +73,9 @@ async function run() {
     if (req.query?.userEmail) {
         query = { userEmail: req.query.userEmail }
     }
+    if (req.query?.buyerEmail) {
+        query = { buyerEmail: req.query.buyerEmail }
+    }
     
     const result = await bidsCollection.find(query).toArray();
     res.send(result);
@@ -86,23 +96,55 @@ app.put('/jobs/:id', async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) }
   const options = { upsert: true };
-  const updated= req.body;
+ 
 
-  const job = {
+ 
+    const updated= req.body;
+
+    const job = {
+        $set: {
+            
+            jobtitle: updated.jobtitle,
+            max: updated.max,
+            min: updated.min,
+            description: updated.description,
+            deadline: updated.deadline,
+            category: updated.category,
+           
+        }
+    }
+  
+    const result = await jobsCollection.updateOne(filter, job, options);
+    res.send(result);
+
+
+
+})
+app.put('/allBids/:id', async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) }
+  const options = { upsert: true };
+  if (req.body?.status=== 'rejected' || req.body?.status === 'in progress'|| req.body?.status === 'complete'){
+    console.log("ooooo")
+    const jobs = {
       $set: {
           
-          jobtitle: updated.jobtitle,
-          max: updated.max,
-          min: updated.min,
-          description: updated.description,
-          deadline: updated.deadline,
-          category: updated.category,
+          status: req.body.status
          
       }
   }
 
-  const result = await jobsCollection.updateOne(filter, job, options);
+  const result = await bidsCollection.updateOne(filter, jobs, options);
   res.send(result);
+
+  }
+ 
+
+ 
+
+
+
+
 })
 app.delete('/jobs/:id', async (req, res) => {
   const id = req.params.id;
