@@ -31,12 +31,12 @@ async function run() {
 
     const jobsCollection = client.db('Marketplace').collection('jobs');
     const bidsCollection = client.db('Marketplace').collection('allBids');
-    app.get('/jobs', async (req, res) => {
-      const cursor = jobsCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
+  //   app.get('/jobs', async (req, res) => {
+  //     const cursor = jobsCollection.find();
+  //     const result = await cursor.toArray();
+  //     res.send(result);
 
-  })
+  // })
   app.get('/jobs/:id', async (req, res) => {
     const id = req.params.id;
     console.log(id)
@@ -59,7 +59,7 @@ async function run() {
     res.send(result);
   });
   app.get('/allBids', async (req, res) => {
-    console.log(req.query.email);
+    
    
     
     let query={}
@@ -68,6 +68,18 @@ async function run() {
     }
     
     const result = await bidsCollection.find(query).toArray();
+    res.send(result);
+})
+  app.get('/jobs', async (req, res) => {
+    console.log(req.query.email);
+   
+    
+    let query={}
+    if (req.query?.email) {
+        query = { email: req.query.email }
+    }
+    
+    const result = await jobsCollection.find(query).toArray();
     res.send(result);
 })
 
