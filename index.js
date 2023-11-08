@@ -51,6 +51,13 @@ async function run() {
     const result = await bidsCollection.insertOne(allBids);
     res.send(result);
   });
+  app.post('/jobs', async (req, res) => {
+    const allJobs = req.body;
+    console.log(allJobs);
+   
+    const result = await jobsCollection.insertOne(allJobs);
+    res.send(result);
+  });
   app.get('/allBids', async (req, res) => {
     console.log(req.query.email);
    
