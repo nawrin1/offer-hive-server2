@@ -104,6 +104,13 @@ app.put('/jobs/:id', async (req, res) => {
   const result = await jobsCollection.updateOne(filter, job, options);
   res.send(result);
 })
+app.delete('/jobs/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) }
+  const result = await jobsCollection.deleteOne(query);
+  console.log(result)
+  res.send(result);
+})
 
 
 
