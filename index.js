@@ -4,8 +4,21 @@ const app = express();
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 3000;
+const jwt=require('jsonwebtoken')
+const cookieParser = require('cookie-parser');
 
-app.use(cors());
+
+
+app.use(cookieParser())
+app.use(cors({
+  origin: [
+    // 'http://localhost:5173'
+    'https://online-marketplace-1a3a1.web.app',
+    'https://online-marketplace-1a3a1.firebaseapp.com'
+  ],
+
+  credentials: true
+}));
 
 app.use(express.json());
 console.log(process.env.DB_PASS)
@@ -22,6 +35,21 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+      return res.status(401).send({ message: 'unauthorized access' })
+  }
+  
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+      }
+      req.user = decoded;
+      next();
+  })
+}
 
 async function run() {
   try {
@@ -47,6 +75,7 @@ async function run() {
   app.get('/allBids/:id', async (req, res) => {
     const id = req.params.id;
     console.log(id)
+
     const query = { _id: new ObjectId(id) }
     const result = await bidsCollection.findOne(query);
     res.send(result);
@@ -68,8 +97,16 @@ async function run() {
   app.get('/allBids', async (req, res) => {
     
    
-    
+
+
+
+
     let query={}
+    const options = {
+   
+      sort: { "status": 1 },
+     
+    };
     if (req.query?.userEmail) {
         query = { userEmail: req.query.userEmail }
     }
@@ -77,11 +114,12 @@ async function run() {
         query = { buyerEmail: req.query.buyerEmail }
     }
     
-    const result = await bidsCollection.find(query).toArray();
+    const result = await bidsCollection.find(query,options).toArray();
     res.send(result);
 })
-  app.get('/jobs', async (req, res) => {
+  app.get('/jobs',  async (req, res) => {
     console.log(req.query.email);
+
    
     
     let query={}
@@ -119,6 +157,7 @@ app.put('/jobs/:id', async (req, res) => {
 
 
 
+
 })
 app.put('/allBids/:id', async (req, res) => {
   const id = req.params.id;
@@ -152,6 +191,26 @@ app.delete('/jobs/:id', async (req, res) => {
   const result = await jobsCollection.deleteOne(query);
   console.log(result)
   res.send(result);
+})
+app.post('/jwt', async (req, res) => {
+  const user = req.body;
+  console.log(user);
+  
+  const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"})
+  res
+  .cookie('token',token,{
+      httpOnly:true,
+      secure:true,
+      
+
+  })
+  .send({success:token})
+})
+app.post('/logout',async(req,res)=>{
+  const user=req.body
+  console.log('logging out',user)
+
+  res.clearCookie('token', {maxAge:0}).send({success:true})
 })
 
 
